@@ -56,8 +56,10 @@ bool CustomBuffer::Remove(size_t len)
 	{
 		len = GetStoredSize();
 	}
-	memmove(GetBuffer(), GetBuffer() + len, len);
 	m_EndPointer -= len;
+	memmove(GetBuffer(), GetBuffer() + len, GetStoredSize());
+
+	return true;
 }
 
 

@@ -67,9 +67,9 @@ void ClientSession::PacketHandling(DWORD bytesTrans)
 	while(true)
 	{
 		/// 패킷 헤더 크기 만큼 읽어와 보기
-		char messageSize;
+		unsigned char messageSize;
 		char* message;
-		if(false == m_Buffer->Peek(&messageSize, sizeof(char)))
+		if(false == m_Buffer->Peek((char*) &messageSize, sizeof(char)))
 			return;
 
 		/// 패킷 완성이 되는가? 
@@ -90,7 +90,7 @@ bool ClientSession::SendToClient(char* message, DWORD bytesTrans)
 	ioData->m_Mode = MODE_SEND;
 	wsa_buf.buf = message;
 	wsa_buf.len = bytesTrans;
-
+	printf("send to %d, message: %s(%d)\n", this->m_NickName, wsa_buf.buf, wsa_buf.len);
 	if(WSASend(m_Socket, &wsa_buf, 1, NULL, 0, &ioData->m_Overlapped, NULL) == SOCKET_ERROR)
 	{
 		DWORD error = WSAGetLastError();
@@ -100,6 +100,7 @@ bool ClientSession::SendToClient(char* message, DWORD bytesTrans)
 			return false;
 		}
 	}
+	
 	return true;
 }
 
@@ -110,7 +111,7 @@ bool ClientSession::RecvFromClient()
 	WSABUF wsa_buf;
 	ioData->m_Mode = MODE_RECV;
 	wsa_buf.buf = (char*)m_Buffer->GetBuffer();
-	wsa_buf.len = (ULONG)m_Buffer->GetFreeSpaceSize();
+	wsa_buf.len = (ULONG)m_Buffer->GetAvailableSize();
 
 	if(WSARecv(m_Socket, &wsa_buf, 1, NULL, &flag, &ioData->m_Overlapped, NULL) == SOCKET_ERROR)
 	{

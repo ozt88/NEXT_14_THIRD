@@ -1,13 +1,7 @@
 #include "stdafx.h"
 #include "Util.h"
 
-void ErrorHandling(char* message, DWORD error)
-{
-	char errorMessage[BUF_SIZE] = {0, };
-	sprintf_s(errorMessage, "%s\n error No: %d", message, error);
-	fputs(errorMessage, stderr);
-	fputc('\n', stderr);
-}
+
 
 bool GetMessageHeader(char* buffer, OUT DWORD* messageLength, OUT PacketType* packetType, OUT char** message)
 {
@@ -21,7 +15,7 @@ bool GetMessageHeader(char* buffer, OUT DWORD* messageLength, OUT PacketType* pa
 	return true;
 }
 
-bool MakeMessageHeader(char* buffer, char bufferLength, char packetType, OUT char* message)
+bool MakeMessageHeader(char* buffer, unsigned char bufferLength, char packetType, OUT char* message)
 {
 	if(message == nullptr)
 	{
@@ -34,4 +28,23 @@ bool MakeMessageHeader(char* buffer, char bufferLength, char packetType, OUT cha
 	message[1] = packetType;
 	memcpy(message + 2, buffer, bufferLength - 2);
 	return true;
+}
+
+void gotoxy(int x, int y)
+{
+	COORD pos = {x, y};
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
+}
+
+void hidecursor()
+{
+	CONSOLE_CURSOR_INFO info = {100, FALSE};
+	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info);
+}
+
+void clearLine(int lineNum)
+{
+	Lock lock;
+	gotoxy(0, lineNum);
+	printf("%100c", ' ');
 }

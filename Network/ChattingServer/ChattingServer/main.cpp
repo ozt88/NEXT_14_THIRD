@@ -98,13 +98,13 @@ int _tmain(int argc, _TCHAR* argv[])
 unsigned int WINAPI ThreadProc(LPVOID _hComport)
 {
 	HANDLE hComport = (HANDLE)_hComport;
-	ClientSession* client;
+	ClientSession* clientSession;
 	DWORD bytesTrans = 0;
 	IOData* ioData = nullptr;
 
 	while(1)
 	{
-		if(!GetQueuedCompletionStatus(hComport, &bytesTrans, (PULONG_PTR) &client, (LPOVERLAPPED*) &ioData, INFINITE))
+		if(!GetQueuedCompletionStatus(hComport, &bytesTrans, (PULONG_PTR) &clientSession, (LPOVERLAPPED*) &ioData, INFINITE))
 		{
 			ErrorHandling("GetQueuedCompletionStatus() error!", GetLastError());
 		}
@@ -113,12 +113,12 @@ unsigned int WINAPI ThreadProc(LPVOID _hComport)
 		{
 			if(bytesTrans == 0)
 			{
-				ClientManager::GetInstance()->RemoveClient(client);
+				ClientManager::GetInstance()->RemoveClient(clientSession);
 			}
 			else
 			{
-				client->PacketHandling(bytesTrans);
-				client->RecvFromClient();
+				clientSession->PacketHandling(bytesTrans);
+				clientSession->RecvFromClient();
 			}
 		}
 		SafeDelete<IOData*>(ioData);

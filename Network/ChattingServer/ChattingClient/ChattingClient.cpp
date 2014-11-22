@@ -2,16 +2,23 @@
 //
 #include "stdafx.h"
 #include "Util.h"
+#include "CustomBuffer.h"
+
 
 unsigned int WINAPI SendThreadProc(LPVOID argv);
 unsigned int WINAPI RecvThreadProc(LPVOID argv);
-int		SendMessage(SOCKET socket, char* message, int length);
-int		RecvMessage(SOCKET socket, char* buffer, int length);
-void	ErrorHandling(char* message, DWORD error);
-void	AddMessage(char* message);
-void	PrintRecvMessages();
+int					SendMessage(SOCKET socket, char* message, int length);
+int					RecvMessage(SOCKET socket, char* buffer, int length);
+unsigned char		GetPacketSize(SOCKET socket);
+void				ErrorHandling(char* message, DWORD error);
+void				GetInput(char* inputBuffer, unsigned char* inputPointer);
+void				Log(char* message);
+void				PrintLogs();
+void				PrintInput(char* inputBuffer, int length);
+void				ErrorHandling(char* message, DWORD error);
 
-std::deque<char*> messages;
+std::deque<char*> logs;
+CRITICAL_SECTION gCriticalSection;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -22,11 +29,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	SOCKADDR_IN servAddr;
 	int port = 0;
 	const char* ip;
+	InitializeCriticalSection(&gCriticalSection);
 
 	if(argc != 2)
 	{
 #ifndef _DEBUG
-		printf("Usage: %s <IP> <PORT>\n", argv[0]);
+		Log("Usage: %s <IP> <PORT>\n", argv[0]);
 		exit(1);
 #else
 		port = 8000;
@@ -63,10 +71,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 	else
 	{
-		puts("Connected........");
+		Log("Connected........");
 	}
 
-
+	hidecursor();
 	hSendThread = (HANDLE) _beginthreadex(NULL, 0, SendThreadProc, (LPVOID)hServSock, 0, (unsigned*) &dwSendThreadId);
 	if(hSendThread == INVALID_HANDLE_VALUE)
 	{
@@ -80,8 +88,6 @@ int _tmain(int argc, _TCHAR* argv[])
 		ErrorHandling("_beginthreadex() : RecvThread error!", GetLastError());
 		exit(1);
 	}
-
-	
 
 	WaitForSingleObject(hSendThread, INFINITE);
 	WaitForSingleObject(hRecvThread, INFINITE);
@@ -113,12 +119,12 @@ int RecvMessage(SOCKET socket, char* buffer, int length)
 {
 	int ret = 0;
 	int recvBytes = 0;
-	while(true)
+	while(recvBytes < length)
 	{
 		ret = recv(socket, buffer + recvBytes, length - recvBytes, NULL);
 		if(ret == SOCKET_ERROR)
 		{
-			ErrorHandling("recv() error!", GetLastError());
+			ErrorHandling("recv() error!", GetLastError()); 
 			return ret;
 		}
 		else if(ret == 0)
@@ -133,17 +139,19 @@ int RecvMessage(SOCKET socket, char* buffer, int length)
 unsigned int WINAPI SendThreadProc(LPVOID argv)
 {
 	SOCKET hServSock = (SOCKET) argv;
-	char buffer[BUF_SIZE] = {0, };
+	char inputBuffer[BUF_SIZE] = {0, };
 	char message[BUF_SIZE] = {0, };
-	unsigned short messageSize = 0;
+	unsigned char messageSize = 0;
+	unsigned char inputSize = 0;
 
 	while(true)
 	{
 		memset(message, 0, sizeof(char) * BUF_SIZE);
-		fputs("Input message(Q to quit): ", stdout);
-		fgets(buffer, BUF_SIZE, stdin);
-		messageSize = strlen(buffer) + 2;
-		MakeMessageHeader(buffer, messageSize, PACKET_CHAT, message);
+		memset(inputBuffer, 0, sizeof(char)*BUF_SIZE);
+		inputSize = 0;
+		GetInput(inputBuffer, &inputSize);
+		messageSize = inputSize + 2;
+		MakeMessageHeader(inputBuffer, messageSize, PACKET_CHAT, message);
 		if(!strcmp(message, "q\n") || !strcmp(message, "Q\n"))
 		{
 			break;
@@ -161,40 +169,127 @@ unsigned int WINAPI SendThreadProc(LPVOID argv)
 unsigned int WINAPI RecvThreadProc(LPVOID argv)
 {
 	SOCKET hServSock = (SOCKET) argv;
-	char message[BUF_SIZE] = {0, };
-	unsigned short messageSize = 0;
+	CustomBuffer packetBuffer(BUF_SIZE);
+	char* message = new char[BUF_SIZE];
+	unsigned short packetSize = 0;
+	unsigned short messageLength = 0;
+	PacketType packetType = PACKET_NONE;
 
 	while(true)
 	{
 		memset(message, 0, sizeof(char)*BUF_SIZE);
-		if(RecvMessage(hServSock, (char*)&messageSize, 1) == SOCKET_ERROR)
+		packetSize = GetPacketSize(hServSock);
+		if(RecvMessage(hServSock, packetBuffer.GetBuffer(), packetSize) == SOCKET_ERROR)
 		{
-			ErrorHandling("RecvMessage(): messageSize error!", GetLastError());
-			continue;
+			ErrorHandling("RecvMessage(): error!", GetLastError());
+			getchar();
+			exit(1);
 		}
-		if(RecvMessage(hServSock, message, messageSize - 1) == SOCKET_ERROR)
+		packetBuffer.Commit(packetSize);
+		packetBuffer.Read((char*)&packetType, 1);
+		packetBuffer.Read(message, packetSize - 1);
+		switch(packetType)
 		{
-			ErrorHandling("RecvMessage(): message error!", GetLastError());
-			continue;
+			case PACKET_ENTER:
+				Log("Enter CSTalk");
+				break;
+			case PACKET_CHAT:
+				Log(message);
+				break;
+			case PACKET_EXIT:
+				break;
+			default:
+				break;
 		}
-		messages.push_back(message + 1);
-		printf(message+1);
 	}
 	return 0;
 }
 
-void PrintRecvMessages()
+void GetInput(char* inputBuffer, unsigned char* inputPointer)
 {
-	system("cls");
-	for(auto message : messages)
+	char inputChar = NULL;
+	int currentPointer = *inputPointer;
+	while(true)
 	{
-		printf("%s\n", message);
+		PrintInput(inputBuffer, currentPointer);
+		inputChar = _getch();
+		if(currentPointer > MAX_MSG_LENGTH)
+		{
+			currentPointer--;
+			continue;
+		}
+		else if(0 < currentPointer && inputChar == 8) // backspace
+		{
+			inputBuffer[--currentPointer] = '\0';
+		}
+		else if(inputChar == '\r')
+		{
+			clearLine(MAX_PRINT_LINE);
+			inputBuffer[currentPointer] = '\0';
+			*inputPointer = currentPointer;
+			break;
+		}
+		else 
+		{
+			if(currentPointer != 0 && currentPointer%MAX_LENGTH_BY_LINE == 0)
+			{
+				inputBuffer[currentPointer++] = '\n';
+			}
+			inputBuffer[currentPointer++] = inputChar;
+		}
 	}
 }
 
-void AddMessage(char* message)
+void PrintInput(char* inputBuffer, int length)
 {
-	messages.push_back(message);
-
+	Lock lock;
+	gotoxy(1, MAX_PRINT_LINE);
+	printf_s("ME> %s%50c", inputBuffer, ' ', length);
 }
 
+void PrintLogs()
+{
+	Lock lock;
+	for(int i = 0; i < logs.size(); ++i)
+	{
+		clearLine(i + 1);
+		gotoxy(0, i + 1);
+		printf_s("%s", logs[i], strlen(logs[i]));
+	}
+}
+
+void Log(char* message)
+{
+	int length = strlen(message);
+	char* log = new char[length + 1];
+	memset(log, 0, sizeof(char)*(length + 1));
+	memcpy(log, message, length);
+	Lock lock;
+	logs.push_back(log);
+	if(logs.size() > MAX_PRINT_LINE)
+	{
+		char* delNode = logs.front();
+		logs.pop_front();
+		SafeDelete<char*>(delNode);
+	}
+	PrintLogs();
+}
+
+unsigned char GetPacketSize(SOCKET socket)
+{
+	unsigned char packetSize = 0;
+	if(RecvMessage(socket, (char*) &packetSize, 1) == SOCKET_ERROR)
+	{
+		ErrorHandling("GetPacketSize(): error!", GetLastError());
+		getchar();
+		exit(1);
+	}
+	return packetSize - 1;
+}
+
+void ErrorHandling(char* message, DWORD error)
+{
+	char errorMessage[BUF_SIZE] = {0, };
+	sprintf_s(errorMessage, "%s error No: %d", message, error);
+	Log(errorMessage);
+}

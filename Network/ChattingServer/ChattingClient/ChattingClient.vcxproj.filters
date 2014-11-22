@@ -27,15 +27,21 @@
     <ClInclude Include="Util.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
+    <ClInclude Include="CustomBuffer.h">
+      <Filter>소스 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="ChattingClient.cpp">
+    <ClCompile Include="Util.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Util.cpp">
+    <ClCompile Include="CustomBuffer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ChattingClient.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

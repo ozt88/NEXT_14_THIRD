@@ -27,43 +27,41 @@ bool ClientManager::AddClient(ClientSession* client)
 	{
 		return false;
 	}
-	auto findIter = std::find(m_Clients.begin(), m_Clients.end(), client);
-	if(findIter != m_Clients.end())
+	auto findIter = std::find(m_ClientSessions.begin(), m_ClientSessions.end(), client);
+	if(findIter != m_ClientSessions.end())
 	{
 		//이미 있으면 실패
 		return false;
 	}
-	m_Clients.push_back(client);
+	m_ClientSessions.push_back(client);
 	return true;
 }
 
-bool ClientManager::RemoveClient(ClientSession* client)
+bool ClientManager::RemoveClient(ClientSession* clientSession)
 {
-	if(!client)
+	if(!clientSession)
 	{
 		return false;
 	}
-	auto findIter = std::find(m_Clients.begin(), m_Clients.end(), client);
-	if(findIter == m_Clients.end())
+	auto findIter = std::find(m_ClientSessions.begin(), m_ClientSessions.end(), clientSession);
+	if(findIter == m_ClientSessions.end())
 	{
 		//없으면 실패
 		return false;
 	}
-	m_Clients.erase(findIter);
-	client->Disconnect();
-	SafeDelete<ClientSession*>(client);
+	m_ClientSessions.erase(findIter);
+	clientSession->Disconnect();
+	SafeDelete<ClientSession*>(clientSession);
 }
 
 bool ClientManager::SendToAllClient(char* message, DWORD bytesTrans)
 {
 	bool ret = true;
-	for(auto clientIter = m_Clients.begin(); clientIter != m_Clients.end(); clientIter++)
+	for(auto iter = m_ClientSessions.begin(); iter != m_ClientSessions.end(); iter++)
 	{
 		
-		auto client = *clientIter;
-		printf("send to %d\n", client);
-
-		ret = client->SendToClient(message, bytesTrans);
+		auto clientSession = *iter;
+		ret = clientSession->SendToClient(message, bytesTrans);
 		if(!ret)
 		{
 			ret = false;
@@ -75,16 +73,16 @@ bool ClientManager::SendToAllClient(char* message, DWORD bytesTrans)
 
 ClientManager::ClientManager()
 {
-	m_Clients.reserve(MAX_THREAD_NUM);
+	m_ClientSessions.reserve(MAX_THREAD_NUM);
 }
 
 ClientManager::~ClientManager()
 {
-	for(auto clientIter = m_Clients.begin(); clientIter != m_Clients.end(); clientIter++)
+	for(auto iter = m_ClientSessions.begin(); iter != m_ClientSessions.end(); iter++)
 	{
-		auto client = *clientIter;
-		RemoveClient(client);
+		auto clientSession = *iter;
+		RemoveClient(clientSession);
 	}
-	m_Clients.clear();
+	m_ClientSessions.clear();
 }
 

@@ -16,7 +16,7 @@ private:
 	~ClientManager();
 
 	static ClientManager*			m_Instance;
-	std::vector<ClientSession*>		m_Clients;
+	std::vector<ClientSession*>		m_ClientSessions;
 
 };
 
