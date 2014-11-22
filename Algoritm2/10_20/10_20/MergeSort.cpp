@@ -35,16 +35,25 @@ void Merge( int* arr , int* buffer , int firstStartIdx , int secondStartIdx , in
 	}
 }
 
-void MergeSort( int* arr ,int* buffer , int beginIdx , int lastIdx )
+void MergeSortIter( int* arr , int* buffer , int beginIdx , int lastIdx )
 {
-	if( arr == NULL || beginIdx >= lastIdx )
+	if( beginIdx < lastIdx )
+	{
+		int centerIdx = beginIdx + ( lastIdx - beginIdx ) / 2;
+		MergeSortIter( arr , buffer , beginIdx , centerIdx );
+		MergeSortIter( arr , buffer , centerIdx + 1 , lastIdx );
+		Merge( arr , buffer , beginIdx , centerIdx + 1 , lastIdx );
+	}
+}
+
+void MergeSort( int* arr , int beginIdx , int lastIdx )
+{
+	if( arr == NULL )
 	{
 		return;
 	}
-	int centerIdx = beginIdx + ( lastIdx - beginIdx ) / 2;
-	MergeSort( arr , buffer, beginIdx , centerIdx );
-	MergeSort( arr , buffer, centerIdx + 1 , lastIdx );
-	Merge( arr , buffer , beginIdx , centerIdx + 1 , lastIdx );
+	int buffer[MAX_BUFFER_SIZE] = { 0 , };
+	MergeSortIter( arr , buffer , beginIdx , lastIdx );
 }
 
 bool isSorted( int* arr , size_t length )
@@ -67,8 +76,7 @@ bool isSorted( int* arr , size_t length )
 
 void testCase( int* arr , size_t length )
 {
-	int buffer[MAX_BUFFER_SIZE];
-	MergeSort( arr , buffer, 0, length-1 );
+	MergeSort( arr , 0, length-1 );
 	for( int i = 0; i < length; ++i )
 	{
 		printf( "%d " , arr[i] );

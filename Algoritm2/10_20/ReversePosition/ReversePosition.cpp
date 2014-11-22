@@ -70,7 +70,7 @@ int _tmain(int argc, _TCHAR* argv[])
 {
 	int test4[] = { 3, 2, 1, 0};
 	int buffer[11];
-	printf( "%d" , CountReversePositionWithMergeSort( test4 , buffer , 0 , 3 ) );
+	printf( "Reverse Position: %d\n" , CountReversePositionWithMergeSort( test4 , buffer , 0 , 3 ) );
 	return 0;
 }
 

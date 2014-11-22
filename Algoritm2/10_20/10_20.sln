@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ReversePosition", "ReverseP
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FindExistencyOfSum", "FindExistencyOfSum\FindExistencyOfSum.vcxproj", "{84C77A26-C552-4192-8BB4-B6341F2503E4}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test1", "Test1\Test1.vcxproj", "{561C97E3-7FA5-4397-94F7-EFA156282CBC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -27,6 +29,10 @@ Global
 		{84C77A26-C552-4192-8BB4-B6341F2503E4}.Debug|Win32.Build.0 = Debug|Win32
 		{84C77A26-C552-4192-8BB4-B6341F2503E4}.Release|Win32.ActiveCfg = Release|Win32
 		{84C77A26-C552-4192-8BB4-B6341F2503E4}.Release|Win32.Build.0 = Release|Win32
+		{561C97E3-7FA5-4397-94F7-EFA156282CBC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{561C97E3-7FA5-4397-94F7-EFA156282CBC}.Debug|Win32.Build.0 = Debug|Win32
+		{561C97E3-7FA5-4397-94F7-EFA156282CBC}.Release|Win32.ActiveCfg = Release|Win32
+		{561C97E3-7FA5-4397-94F7-EFA156282CBC}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
