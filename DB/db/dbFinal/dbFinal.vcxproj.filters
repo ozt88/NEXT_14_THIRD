@@ -13,45 +13,30 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="소스 파일\OnlineBookStore">
-      <UniqueIdentifier>{999ddc3a-dc3b-4e87-92f0-c6fd6278b68f}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="CustomDB.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
-    <ClInclude Include="EquipmentManager.h">
+    <ClInclude Include="stdafx.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
-    <ClInclude Include="BookStoreManager.h">
-      <Filter>소스 파일\OnlineBookStore</Filter>
+    <ClInclude Include="targetver.h">
+      <Filter>소스 파일</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="dbFinal.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
     <ClCompile Include="CustomDB.cpp">
       <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="EquipmentManager.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="BookStoreManager.cpp">
-      <Filter>소스 파일\OnlineBookStore</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
